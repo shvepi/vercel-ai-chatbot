@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     your_name: "Lucas Mandelbaum"
   }
 
-  const res = await fetch('https://email-ai-service-kl7byg23kq-uc.a.run.app/generate-email?token=0d2cbb64-eab1-4007-9d41-ddd561acbe94', {
+  const res = await fetch('https://email-ai-service-kl7byg23kq-uc.a.run.app/generate-email', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
