@@ -1,3 +1,4 @@
+import UploadForm from '@/components/UploadForm'; // use client
 import { Metadata } from 'next'
 
 import { Toaster } from 'react-hot-toast'
@@ -32,25 +33,27 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" suppressHydrationWarning>
+      <html lang="en" suppressHydrationWarning>
       <head />
       <body
-        className={cn(
-          'font-sans antialiased',
-          fontSans.variable,
-          fontMono.variable
-        )}
+          className={cn(
+              'font-sans antialiased',
+              fontSans.variable,
+              fontMono.variable
+          )}
       >
-        <Toaster />
-        <Providers attribute="class" defaultTheme="system" enableSystem>
-          <div className="flex min-h-screen flex-col">
-            {/* @ts-ignore */}
-            <Header />
-            <main className="flex flex-1 flex-col bg-muted/50">{children}</main>
-          </div>
-          <TailwindIndicator />
-        </Providers>
+      <Toaster />
+      <Providers attribute="class" defaultTheme="system" enableSystem>
+        <div className="flex min-h-screen flex-col">
+          {/* @ts-ignore */}
+          <Header />
+          <UploadForm />
+
+          <main className="flex flex-1 flex-col bg-muted/50">{children}</main>
+        </div>
+        <TailwindIndicator />
+      </Providers>
       </body>
-    </html>
+      </html>
   )
 }

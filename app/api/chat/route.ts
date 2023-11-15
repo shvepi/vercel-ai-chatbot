@@ -1,6 +1,3 @@
-import 'server-only'
-import { OpenAIStream, StreamingTextResponse } from 'ai'
-import { Configuration, OpenAIApi } from 'openai-edge'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/db_types'
@@ -10,19 +7,13 @@ import { nanoid } from '@/lib/utils'
 
 export const runtime = 'edge'
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
-})
-
-const openai = new OpenAIApi(configuration)
-
 export async function POST(req: Request) {
   const cookieStore = cookies()
   const supabase = createRouteHandlerClient<Database>({
     cookies: () => cookieStore
   })
   const json = await req.json()
-  const { messages, previewToken } = json
+  const { messages } = json
   const userId = (await auth({ cookieStore }))?.user.id
 
   if (!userId) {
@@ -31,41 +22,51 @@ export async function POST(req: Request) {
     })
   }
 
-  if (previewToken) {
-    configuration.apiKey = previewToken
+  const apiRequestBody = {
+    query: messages[0]?.content,
+    artist_name: "John Doe",
+    your_name: "Lucas Mandelbaum"
   }
 
-  const res = await openai.createChatCompletion({
-    model: 'gpt-3.5-turbo',
-    messages,
-    temperature: 0.7,
-    stream: true
+  const res = await fetch('https://email-ai-service-kl7byg23kq-uc.a.run.app/generate-email?token=0d2cbb64-eab1-4007-9d41-ddd561acbe94', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(apiRequestBody),
   })
 
-  const stream = OpenAIStream(res, {
-    async onCompletion(completion) {
-      const title = json.messages[0].content.substring(0, 100)
-      const id = json.id ?? nanoid()
-      const createdAt = Date.now()
-      const path = `/chat/${id}`
-      const payload = {
-        id,
-        title,
-        userId,
-        createdAt,
-        path,
-        messages: [
-          ...messages,
-          {
-            content: completion,
-            role: 'assistant'
-          }
-        ]
+  if (!res.ok) {
+    console.error('API request failed:', res.statusText);
+    return new Response('API request failed', { status: res.status });
+  }
+
+  const responseData = await res.json()
+
+  const title = json.messages[0].content.substring(0, 100)
+  const id = json.id ?? nanoid()
+  const createdAt = Date.now()
+  const path = `/chat/${id}`
+  const payload = {
+    id,
+    title,
+    userId,
+    createdAt,
+    path,
+    messages: [
+      ...messages,
+      {
+        content: responseData.email,
+        role: 'assistant'
       }
-      // Insert chat into database.
-      await supabase.from('chats').upsert({ id, payload }).throwOnError()
-    }
+    ]
+  }
+
+
+  return new Response(payload.messages[1].content, {
+    headers: {
+      'Content-Type': 'text/plain',
+    },
   })
 
-  return new StreamingTextResponse(stream)
 }

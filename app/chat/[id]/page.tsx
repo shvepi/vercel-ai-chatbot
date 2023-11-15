@@ -6,6 +6,7 @@ import { getChat } from '@/app/actions'
 import { Chat } from '@/components/chat'
 import { cookies } from 'next/headers'
 
+
 export const runtime = 'edge'
 export const preferredRegion = 'home'
 
@@ -49,5 +50,9 @@ export default async function ChatPage({ params }: ChatPageProps) {
     notFound()
   }
 
-  return <Chat id={chat.id} initialMessages={chat.messages} />
+  return (
+      <div>
+        <Chat id={chat.id} initialMessages={chat.messages} />
+      </div>
+  );
 }
