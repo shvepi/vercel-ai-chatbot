@@ -30,7 +30,7 @@ const UploadForm = () => {
             const formData = new FormData();
             formData.append('file[]', file);
 
-            const response = await fetch('http://127.0.0.1:5000/upload-documents', {
+            const response = await fetch('https://email-ai-service-kl7byg23kq-uc.a.run.app/upload-documents', {
                 method: 'POST',
                 body: formData,
             });
